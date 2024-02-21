@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { github, lucia } from "~/server/utils/auth";
 
 export default eventHandler(async (event) => {
-  console.log(" 🔥 hit the github callback url");
   const query = getQuery(event);
   const code = query.code?.toString() ?? null;
   const state = query.state?.toString() ?? null;
@@ -33,16 +32,11 @@ export default eventHandler(async (event) => {
         githubId: true,
       },
     });
-    console.log(" 🔥 existingUser", { existingUser });
 
     if (existingUser) {
       const session = await lucia.createSession(existingUser.id, {});
       const cookie = lucia.createSessionCookie(session.id);
       setCookie(event, cookie.name, cookie.value, cookie.attributes);
-      console.log(
-        " 🔥 redirecting to",
-        `/o/${existingUser.username.toLocaleLowerCase()}`
-      );
       return await sendRedirect(
         event,
         `/o/${existingUser.username.toLocaleLowerCase()}`
@@ -72,7 +66,6 @@ export default eventHandler(async (event) => {
     setCookie(event, cookie.name, cookie.value, cookie.attributes);
     return await sendRedirect(event, `/o/${githubUser.login.toLowerCase()}`);
   } catch (e) {
-    console.error(" 🔥 error", e);
     if (
       e instanceof OAuth2RequestError &&
       e.message === "bad_verification_code"
