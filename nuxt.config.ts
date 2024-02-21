@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   },
   ui: {
     global: true,
-    icons: ["ph"],
+    icons: ["ph", "simple-icons"],
   },
   colorMode: {
     // classSuffix: '',

@@ -3,7 +3,6 @@ import { observable } from "@trpc/server/observable";
 import { createTRPCNuxtClient, httpBatchLink } from "trpc-nuxt/client";
 import superjson from "superjson";
 import type { TrpcWebAppRouter } from "../server/trpc";
-import type { TrpcMailBridgeRouter } from "@uninbox/types/trpc";
 
 export const errorHandler: TRPCLink<TrpcWebAppRouter> = () => {
   return ({ next, op }) => {
@@ -65,30 +64,10 @@ export default defineNuxtPlugin(() => {
       }),
     ],
   });
-  // const trpcMailBridgeClient = createTRPCNuxtClient<TrpcMailBridgeRouter>({
-  //   transformer: superjson,
-  //   links: [
-  //     loggerLink({
-  //       enabled: (opts) =>
-  //         process.env.NODE_ENV === 'development' ||
-  //         (opts.direction === 'down' && opts.result instanceof Error)
-  //     }),
-  //     httpBatchLink({
-  //       url: `${config.mailBridge.url}/trpc`,
-  //       maxURLLength: 2083,
-  //       headers() {
-  //         return {
-  //           Authorization: config.mailBridge.key as string
-  //         };
-  //       }
-  //     })
-  //   ]
-  // });
 
   return {
     provide: {
       trpc: trpcWebAppClient,
-      // mailBridge: trpcMailBridgeClient
     },
   };
 });

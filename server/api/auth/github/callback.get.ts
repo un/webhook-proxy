@@ -1,9 +1,11 @@
 import { OAuth2RequestError } from "arctic";
 import { db } from "~/server/db";
-import { users } from "~/server/db/schema";
+import { orgMembers, orgs, users } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
+import { github, lucia } from "~/server/utils/auth";
 
-export default defineEventHandler(async (event) => {
+export default eventHandler(async (event) => {
+  console.log(" 🔥 hit the github callback url");
   const query = getQuery(event);
   const code = query.code?.toString() ?? null;
   const state = query.state?.toString() ?? null;
@@ -21,6 +23,7 @@ export default defineEventHandler(async (event) => {
         Authorization: `Bearer ${tokens.accessToken}`,
       },
     });
+
     const githubUser: GitHubUser = await githubUserResponse.json();
     const existingUser = await db.query.users.findFirst({
       where: eq(users.githubId, githubUser.id),
@@ -30,15 +33,25 @@ export default defineEventHandler(async (event) => {
         githubId: true,
       },
     });
+    console.log(" 🔥 existingUser", { existingUser });
 
     if (existingUser) {
+      console.log(" 🔥 existing user");
       const session = await lucia.createSession(existingUser.id, {});
+      console.log(" 🔥 session", { session });
       appendHeader(
         event,
         "Set-Cookie",
         lucia.createSessionCookie(session.id).serialize()
       );
-      return sendRedirect(event, "/dashboard");
+      console.log(
+        " 🔥 redirecting to",
+        `/o/${existingUser.username.toLocaleLowerCase()}`
+      );
+      return sendRedirect(
+        event,
+        `/o/${existingUser.username.toLocaleLowerCase()}`
+      );
     }
 
     const newUser = await db
@@ -46,13 +59,26 @@ export default defineEventHandler(async (event) => {
       .values({ username: githubUser.login, githubId: githubUser.id })
       .returning();
 
+    const newOrg = await db
+      .insert(orgs)
+      .values({
+        name: githubUser.login,
+        slug: githubUser.login.toLowerCase(),
+      })
+      .returning();
+
+    await db.insert(orgMembers).values({
+      orgId: newOrg[0].id,
+      userId: newUser[0].id,
+    });
+
     const session = await lucia.createSession(newUser[0].id, {});
     appendHeader(
       event,
       "Set-Cookie",
       lucia.createSessionCookie(session.id).serialize()
     );
-    return sendRedirect(event, "/dashboard");
+    return sendRedirect(event, `/o/${githubUser.login.toLowerCase()}`);
   } catch (e) {
     if (
       e instanceof OAuth2RequestError &&

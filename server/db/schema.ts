@@ -19,6 +19,7 @@ export const users = pgTable("users", {
     .default(sql`gen_random_uuid()`),
   githubId: varchar("github_id").notNull().unique(),
   username: varchar("username").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -48,16 +49,43 @@ export const orgs = pgTable("orgs", {
     .notNull()
     .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
+  slug: text("slug").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const orgRelations = relations(orgs, ({ many }) => ({
   members: many(orgMembers),
   endpoints: many(endpoints),
   destinations: many(destinations),
+}));
+
+export const orgInvites = pgTable("org_invites", {
+  id: uuid("id")
+    .notNull()
+    .default(sql`gen_random_uuid()`),
+  orgId: uuid("org_id").notNull(),
+  token: uuid("token")
+    .notNull()
+    .default(sql`gen_random_uuid()`),
+  consumed: boolean("consumed").default(false).notNull(),
+  createdBy: uuid("created_by").notNull(),
+  consumedBy: uuid("consumed_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const orgInviteRelations = relations(orgInvites, ({ one }) => ({
+  org: one(orgs, {
+    fields: [orgInvites.orgId],
+    references: [orgs.id],
+  }),
+  createdBy: one(users, {
+    fields: [orgInvites.createdBy],
+    references: [users.id],
+  }),
+  consumedBy: one(users, {
+    fields: [orgInvites.consumedBy],
+    references: [users.id],
+  }),
 }));
 
 //
@@ -67,10 +95,7 @@ export const orgMembers = pgTable("org_members", {
     .default(sql`gen_random_uuid()`),
   orgId: uuid("org_id").notNull(),
   userId: uuid("user_id").notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const orgMemberRelations = relations(orgMembers, ({ one }) => ({
@@ -96,10 +121,7 @@ export const endpoints = pgTable("endpoints", {
     .notNull()
     .$type<{ code: number; content: string }>(),
   routingStrategy: routingStrategyEnum("routing_strategy").notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const endpointRelations = relations(endpoints, ({ one, many }) => ({
@@ -118,10 +140,7 @@ export const destinations = pgTable("destinations", {
   name: text("name").notNull(),
   url: text("url").notNull(),
   headers: text("headers").notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const destinationRelations = relations(
@@ -177,10 +196,7 @@ export const messages = pgTable("messages", {
     .notNull()
     .$type<{ code: number; content: string }>(),
   origin: text("origin").notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const messageRelations = relations(messages, ({ one }) => ({
@@ -203,10 +219,7 @@ export const messageDeliveries = pgTable("message_deliveries", {
   response: json("response")
     .notNull()
     .$type<{ code: number; content: string }>(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const messageDeliveryRelations = relations(

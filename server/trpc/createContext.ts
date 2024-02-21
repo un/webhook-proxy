@@ -7,7 +7,8 @@ import type { DatabaseUser } from "lucia";
 //  * @link https://trpc.io/docs/context
 
 export const createContext = async (event: H3Event) => {
-  const user: DatabaseUser = await event.context.user;
+  const user: DatabaseUser | null = (await event.context
+    .user) as DatabaseUser | null;
   const org: OrgContext = await event.context.org;
   return { db, user, org, event };
 };
