@@ -11,5 +11,5 @@ export default defineEventHandler(async (event) => {
     maxAge: 60 * 10,
     sameSite: "lax",
   });
-  return sendRedirect(event, url.toString());
+  return await sendRedirect(event, url.toString());
 });

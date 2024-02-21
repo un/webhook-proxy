@@ -48,7 +48,7 @@ export default eventHandler(async (event) => {
         " 🔥 redirecting to",
         `/o/${existingUser.username.toLocaleLowerCase()}`
       );
-      return sendRedirect(
+      return await sendRedirect(
         event,
         `/o/${existingUser.username.toLocaleLowerCase()}`
       );
@@ -78,7 +78,7 @@ export default eventHandler(async (event) => {
       "Set-Cookie",
       lucia.createSessionCookie(session.id).serialize()
     );
-    return sendRedirect(event, `/o/${githubUser.login.toLowerCase()}`);
+    return await sendRedirect(event, `/o/${githubUser.login.toLowerCase()}`);
   } catch (e) {
     if (
       e instanceof OAuth2RequestError &&
