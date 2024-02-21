@@ -28,7 +28,7 @@ export const userRelations = relations(users, ({ many }) => ({
 }));
 
 export const sessions = pgTable("sessions", {
-  id: uuid("id").notNull(),
+  id: varchar("id", { length: 64 }).notNull(),
   userId: uuid("user_id").notNull(),
   expiresAt: timestamp("expires_at", {
     withTimezone: true,

@@ -36,14 +36,9 @@ export default eventHandler(async (event) => {
     console.log(" 🔥 existingUser", { existingUser });
 
     if (existingUser) {
-      console.log(" 🔥 existing user");
       const session = await lucia.createSession(existingUser.id, {});
-      console.log(" 🔥 session", { session });
-      appendHeader(
-        event,
-        "Set-Cookie",
-        lucia.createSessionCookie(session.id).serialize()
-      );
+      const cookie = lucia.createSessionCookie(session.id);
+      setCookie(event, cookie.name, cookie.value, cookie.attributes);
       console.log(
         " 🔥 redirecting to",
         `/o/${existingUser.username.toLocaleLowerCase()}`
@@ -73,13 +68,11 @@ export default eventHandler(async (event) => {
     });
 
     const session = await lucia.createSession(newUser[0].id, {});
-    appendHeader(
-      event,
-      "Set-Cookie",
-      lucia.createSessionCookie(session.id).serialize()
-    );
+    const cookie = lucia.createSessionCookie(session.id);
+    setCookie(event, cookie.name, cookie.value, cookie.attributes);
     return await sendRedirect(event, `/o/${githubUser.login.toLowerCase()}`);
   } catch (e) {
+    console.error(" 🔥 error", e);
     if (
       e instanceof OAuth2RequestError &&
       e.message === "bad_verification_code"
