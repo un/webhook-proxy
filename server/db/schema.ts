@@ -112,11 +112,13 @@ export const orgMemberRelations = relations(orgMembers, ({ one }) => ({
 //
 
 export const routingStrategyEnum = pgEnum("routing_strategy", ["first", "all"]);
+
 export const endpoints = pgTable("endpoints", {
   id: uuid("id")
     .notNull()
     .default(sql`gen_random_uuid()`),
   orgId: uuid("org_id").notNull(),
+  name: text("name").notNull(),
   response: json("response")
     .notNull()
     .$type<{ code: number; content: string }>(),

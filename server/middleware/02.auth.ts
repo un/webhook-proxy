@@ -4,6 +4,12 @@ import type { User, Session } from "lucia";
 
 export default defineEventHandler(async (event) => {
   if (event.node.req.method !== "GET") {
+    if (
+      event.path.startsWith("/api/endpoint") ||
+      event.path.startsWith("/endpoint")
+    ) {
+      return;
+    }
     const originHeader = getHeader(event, "Origin") ?? null;
     const hostHeader = getHeader(event, "Host") ?? null;
     if (

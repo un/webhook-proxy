@@ -1,13 +1,30 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@nuxt/devtools", "@vueuse/nuxt", "nuxt-security", "@nuxt/ui"],
+  modules: [
+    "@nuxt/devtools",
+    "@vueuse/nuxt",
+    "@vueuse/nuxt",
+    "nuxt-security",
+    "@nuxt/ui",
+    "nuxt-shiki",
+  ],
 
   runtimeConfig: {
     primaryDomain: process.env.NUXT_PRIMARY_DOMAIN,
     dbConnectionString: process.env.NUXT_POSTGRES_CONNECTION_STRING,
     githubClientId: process.env.NUXT_GITHUB_CLIENT_ID,
     githubClientSecret: process.env.NUXT_GITHUB_CLIENT_SECRET,
+    public: {
+      baseUrl: process.env.NUXT_PRIMARY_DOMAIN,
+    },
+  },
+
+  shiki: {
+    theme: "tokyo-night",
+    lang: "json",
+    themes: ["tokyo-night"],
+    langs: [],
   },
 
   css: ["@/assets/css/main.css"],
@@ -37,6 +54,15 @@ export default defineNuxtConfig({
         process.env.NODE_ENV === "development" ? "unsafe-none" : "require-corp",
       contentSecurityPolicy: {
         "img-src": ["'self'", "data:", process.env.WEBAPP_STORAGE_URL || ""],
+        "script-src":
+          "'self' https: 'unsafe-eval' 'unsafe-inline' 'strict-dynamic' 'nonce-{{nonce}}'",
+      },
+    },
+  },
+  routeRules: {
+    "/endpoint/**": {
+      security: {
+        xssValidator: false,
       },
     },
   },
