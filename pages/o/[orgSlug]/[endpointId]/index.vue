@@ -57,7 +57,6 @@ watch(userEndpoint, (endpoint) => {
     navigateTo(`/o/${orgSlug}`);
   }
   if (endpoint.response) {
-    console.log(endpoint.response.code);
     responseCode.value = endpoint.response.code;
     responseContent.value = endpoint.response.content;
     routingStrategy.value = endpoint.routingStrategy;

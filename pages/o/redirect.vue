@@ -2,7 +2,6 @@
 if (!import.meta.server) {
   const user = await $fetch("/api/auth/user");
   if (user?.username) {
-    console.log("user redirect");
     //@ts-expect-error - posgres typings are not working
     await navigateTo(`/o/${user.username.toLowerCase()}`);
   }
