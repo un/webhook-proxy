@@ -1,5 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ guest: true });
+const loginLoading = ref(false);
+
+async function doGithubLogin() {
+  loginLoading.value = true;
+  await navigateTo("/api/auth/github", { external: true });
+}
 </script>
 <template>
   <div class="w-full h-full flex flex-col items-center justify-center gap-4">
@@ -15,11 +21,13 @@ definePageMeta({ guest: true });
         <UButton
           color="black"
           icon="i-simple-icons-github"
+          :loading="loginLoading"
+          loading-icon="i-ph-spinner-gap"
           label="Sign in with GitHub"
           size="xl"
           target="_self"
           trailing-icon="i-heroicons-arrow-right-20-solid"
-          @click="navigateTo('/api/auth/github', { external: true })"
+          @click="doGithubLogin()"
         />
         <UButton
           color="black"

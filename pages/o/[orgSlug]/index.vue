@@ -4,9 +4,16 @@ const orgSlug = useRoute().params.orgSlug as string;
 
 const displayedEndpointNameField = ref<string>("");
 const editEndpointNameField = ref<string>("");
+
 const addDestinationModalOpen = ref(false);
 const newDestinationName = ref("");
 const newDestinationUrl = ref("");
+
+const editDestinationModalOpen = ref(false);
+const editDestinationId = ref("");
+const editDestinationName = ref("");
+const editDestinationUrl = ref("");
+const editDestinationCode = ref(200);
 
 const {
   data: userEndpoints,
@@ -22,6 +29,16 @@ const {
   {},
   { server: false }
 );
+
+watch(editDestinationId, () => {
+  const destination = userDestinations.value?.find(
+    (d: { id: string }) => d.id === editDestinationId.value
+  );
+  if (!destination) return;
+  editDestinationName.value = destination.name;
+  editDestinationUrl.value = destination.url;
+  editDestinationCode.value = destination.responseCode;
+});
 
 async function addNewEndpoint() {
   await $trpc.endpoints.create.mutate({ name: "New Endpoint" });
@@ -51,6 +68,38 @@ async function addNewDestination() {
   addDestinationModalOpen.value = false;
   newDestinationName.value = "";
   newDestinationUrl.value = "";
+}
+
+async function showEditDestinationModal(id: string) {
+  editDestinationId.value = id;
+  editDestinationModalOpen.value = true;
+}
+
+async function editDestination() {
+  if (!editDestinationId) return;
+
+  await $trpc.destinations.updateDestination.mutate({
+    id: editDestinationId.value,
+    name: editDestinationName.value,
+    url: editDestinationUrl.value,
+    code: editDestinationCode.value,
+  });
+  editDestinationModalOpen.value = false;
+  refreshDestinations();
+}
+
+async function deleteDestination() {
+  if (!editDestinationId) return;
+  await $trpc.destinations.deleteDestination.mutate({
+    id: editDestinationId.value,
+  });
+  editDestinationModalOpen.value = false;
+  refreshDestinations();
+}
+
+async function logout() {
+  await useFetch("/api/auth/logout", { method: "POST" });
+  await navigateTo("/");
 }
 </script>
 
@@ -142,11 +191,7 @@ async function addNewDestination() {
                     <div class="flex flex-row gap-4 items-center">
                       <span
                         class="font-medium text-lg cursor-pointer"
-                        @click="
-                          navigateTo(
-                            `/o/${orgSlug}/destination/${destination.id}`
-                          )
-                        "
+                        @click="showEditDestinationModal(destination.id)"
                         >{{ destination.name }}</span
                       >
                     </div>
@@ -162,9 +207,7 @@ async function addNewDestination() {
                     size="xs"
                     :label="destination.id"
                     class="w-fit cursor-pointer"
-                    @click="
-                      navigateTo(`/o/${orgSlug}/destination/${destination.id}`)
-                    "
+                    @click="showEditDestinationModal(destination.id)"
                   />
                 </div>
               </UCard>
@@ -179,6 +222,7 @@ async function addNewDestination() {
           />
         </template>
       </UCard>
+      <UButton label="Logout" color="red" block @click="logout()" />
     </div>
     <UModal v-model="addDestinationModalOpen">
       <div class="p-4 flex flex-col gap-4">
@@ -188,6 +232,29 @@ async function addNewDestination() {
         <UButton label="Add Desination" @click="addNewDestination()" />
       </div>
     </UModal>
-    <h1>Organization: {{ orgSlug }}</h1>
+    <UModal v-model="editDestinationModalOpen">
+      <div class="p-8 flex flex-col gap-4">
+        <span class="font-display text-3xl">Edit Destination</span>
+        <span>Name: <UInput label="Name" v-model="editDestinationName" /></span>
+        <span>Url: <UInput label="Url" v-model="editDestinationUrl" /></span>
+        <span>
+          Expected Response Code:
+          <UInput
+            label="Response Code"
+            v-model="editDestinationCode"
+            type="number"
+          />
+        </span>
+        <div class="flex flex-row gap-4 justify-end">
+          <UButton
+            label="Delete Destination"
+            color="red"
+            variant="outline"
+            @click="deleteDestination()"
+          />
+          <UButton label="Save Destination" @click="editDestination()" />
+        </div>
+      </div>
+    </UModal>
   </div>
 </template>

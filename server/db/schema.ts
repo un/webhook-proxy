@@ -16,7 +16,8 @@ import {
 export const users = pgTable("users", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   githubId: varchar("github_id").notNull().unique(),
   username: varchar("username").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -28,7 +29,7 @@ export const userRelations = relations(users, ({ many }) => ({
 }));
 
 export const sessions = pgTable("sessions", {
-  id: varchar("id", { length: 64 }).notNull(),
+  id: varchar("id", { length: 64 }).notNull().primaryKey(),
   userId: uuid("user_id").notNull(),
   expiresAt: timestamp("expires_at", {
     withTimezone: true,
@@ -47,7 +48,8 @@ export const sessionRelations = relations(sessions, ({ one }) => ({
 export const orgs = pgTable("orgs", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -62,7 +64,8 @@ export const orgRelations = relations(orgs, ({ many }) => ({
 export const orgInvites = pgTable("org_invites", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   orgId: uuid("org_id").notNull(),
   token: uuid("token")
     .notNull()
@@ -92,7 +95,8 @@ export const orgInviteRelations = relations(orgInvites, ({ one }) => ({
 export const orgMembers = pgTable("org_members", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   orgId: uuid("org_id").notNull(),
   userId: uuid("user_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -116,7 +120,8 @@ export const routingStrategyEnum = pgEnum("routing_strategy", ["first", "all"]);
 export const endpoints = pgTable("endpoints", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   orgId: uuid("org_id").notNull(),
   name: text("name").notNull(),
   response: json("response")
@@ -137,11 +142,13 @@ export const endpointRelations = relations(endpoints, ({ one, many }) => ({
 export const destinations = pgTable("destinations", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   orgId: uuid("org_id").notNull(),
   name: text("name").notNull(),
   url: text("url").notNull(),
   headers: text("headers").notNull(),
+  responseCode: integer("response_code").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -159,7 +166,8 @@ export const destinationRelations = relations(
 export const endpointDestinations = pgTable("endpoint_destinations", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   orgId: uuid("org_id").notNull(),
   endpointId: uuid("endpoint_id").notNull(),
   destinationId: uuid("destination_id").notNull(),
@@ -189,11 +197,14 @@ export const endpointDestinationRelations = relations(
 export const messages = pgTable("messages", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
   orgId: uuid("org_id").notNull(),
   endpointId: uuid("endpoint_id").notNull(),
   headers: json("headers").notNull(),
-  body: json("body").notNull(),
+  method: varchar("method").notNull(),
+  body: varchar("body").notNull(),
+  contentType: varchar("content_type").notNull(),
   response: json("response")
     .notNull()
     .$type<{ code: number; content: string }>(),
@@ -215,9 +226,12 @@ export const messageRelations = relations(messages, ({ one }) => ({
 export const messageDeliveries = pgTable("message_deliveries", {
   id: uuid("id")
     .notNull()
-    .default(sql`gen_random_uuid()`),
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
+  orgId: uuid("org_id").notNull(),
   messageId: uuid("message_id").notNull(),
   destinationId: uuid("destination_id").notNull(),
+  success: boolean("success").notNull(),
   response: json("response")
     .notNull()
     .$type<{ code: number; content: string }>(),
@@ -227,6 +241,10 @@ export const messageDeliveries = pgTable("message_deliveries", {
 export const messageDeliveryRelations = relations(
   messageDeliveries,
   ({ one }) => ({
+    org: one(orgs, {
+      fields: [messageDeliveries.orgId],
+      references: [orgs.id],
+    }),
     message: one(messages, {
       fields: [messageDeliveries.messageId],
       references: [messages.id],

@@ -1,3 +1,3 @@
-export default eventHandler(() => {
-  return { status: "I'm Alive 🏝️" };
+export default eventHandler((event) => {
+  return send(event, "ok", "application/text");
 });

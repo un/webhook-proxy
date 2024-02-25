@@ -1,7 +1,12 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { limitedProcedure, router, userProcedure, orgProcedure } from "../trpc";
-import { destinations, endpoints } from "~/server/db/schema";
+import {
+  destinations,
+  endpointDestinations,
+  endpoints,
+  messageDeliveries,
+} from "~/server/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 
 export const destinationRouter = router({
@@ -31,6 +36,7 @@ export const destinationRouter = router({
           url: input.url,
           orgId: org.id,
           headers: "{}",
+          responseCode: 200,
         })
         .returning({ id: destinations.id });
 
@@ -48,6 +54,7 @@ export const destinationRouter = router({
           name: true,
           url: true,
           createdAt: true,
+          responseCode: true,
         },
         orderBy: [desc(destinations.createdAt)],
       });
@@ -69,17 +76,20 @@ export const destinationRouter = router({
           name: true,
           createdAt: true,
           url: true,
+          responseCode: true,
         },
       });
 
       return destinationResponse;
     }),
-  renameDestination: orgProcedure
+  updateDestination: orgProcedure
     .input(
       z
         .object({
           id: z.string(),
           name: z.string().min(3).max(64),
+          url: z.string().min(3).max(256),
+          code: z.number().int().min(100).max(599),
         })
         .strict()
     )
@@ -90,9 +100,46 @@ export const destinationRouter = router({
         .update(destinations)
         .set({
           name: input.name,
+          responseCode: input.code,
+          url: input.url,
         })
         .where(
           and(eq(destinations.id, input.id), eq(destinations.orgId, org.id))
+        );
+
+      return;
+    }),
+  deleteDestination: orgProcedure
+    .input(
+      z
+        .object({
+          id: z.string(),
+        })
+        .strict()
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db, user, org } = ctx;
+
+      await db
+        .delete(destinations)
+        .where(
+          and(eq(destinations.id, input.id), eq(destinations.orgId, org.id))
+        );
+      await db
+        .delete(endpointDestinations)
+        .where(
+          and(
+            eq(endpointDestinations.destinationId, input.id),
+            eq(endpointDestinations.orgId, org.id)
+          )
+        );
+      await db
+        .delete(messageDeliveries)
+        .where(
+          and(
+            eq(messageDeliveries.destinationId, input.id),
+            eq(messageDeliveries.orgId, org.id)
+          )
         );
 
       return;

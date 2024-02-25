@@ -40,7 +40,5 @@ export const validateOrgSlug = async (
     slug: orgLookupResult.slug,
     members: orgLookupResult.members,
   };
-
-  await useStorage("org-context").setItem(orgSlug, orgContext);
   return orgContext;
 };

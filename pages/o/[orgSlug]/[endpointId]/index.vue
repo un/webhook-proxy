@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useClipboard } from "@vueuse/core";
 import type { HTTPHeaderName } from "h3";
+type MessageDeliveries = Awaited<
+  ReturnType<typeof $trpc.messages.getMessagesDeliveries.query>
+>;
 const { $trpc } = useNuxtApp();
 const orgSlug = useRoute().params.orgSlug as string;
 const endpointId = useRoute().params.endpointId as string;
@@ -17,6 +20,10 @@ const showEditRoutingStrategyModal = ref(false);
 const routingStrategy = ref<"first" | "all">("first");
 const responseCode = ref<number>(200);
 const responseContent = ref<string>("ok");
+const replayLoading = ref(false);
+
+const activeMessageId = ref<string | null>(null);
+const activeMessageDeliveries = ref<MessageDeliveries | null>();
 
 const {
   data: userEndpoint,
@@ -62,6 +69,12 @@ watch(endpointMessages, () => {
     activeMessageId.value = endpointMessages.value[0].id;
 });
 
+watch(activeMessageId, async () => {
+  if (activeMessageId.value) {
+    getMessageDeliveries();
+  }
+});
+
 const selectedOrgDestinationIds = ref<string[]>([]);
 const possibleOrgDestinations = ref<{ name: string; id: string }[]>([]);
 watch(orgDestinations, () => {
@@ -73,10 +86,10 @@ watch(orgDestinations, () => {
 });
 
 const endpointUrl = computed(() => {
-  return `${config.public.baseUrl}/endpoint/${endpointId}`;
+  const protocol = import.meta.dev ? "http" : "https";
+  return `${protocol}://${config.public.baseUrl}/endpoint/${endpointId}`;
 });
 
-const activeMessageId = ref<string | null>(null);
 const activeMessage = computed(() => {
   return endpointMessages.value?.find((m) => m.id === activeMessageId.value);
 });
@@ -89,6 +102,22 @@ const activeMessageHeaders = computed(() => {
     tableContent.push({ key, value });
   }
   return tableContent;
+});
+
+const activeMessageBody = computed(() => {
+  if (!activeMessage.value) return "";
+  if (activeMessage.value.contentType === "application/json") {
+    return JSON.stringify(JSON.parse(activeMessage.value.body), null, 2);
+  }
+  return activeMessage.value.body;
+});
+
+const activeMessageContentType = computed(() => {
+  if (!activeMessage.value) return "";
+  const type = activeMessage.value.contentType.startsWith("application/")
+    ? activeMessage.value.contentType.split("/")[1]
+    : activeMessage.value.contentType;
+  return type;
 });
 
 function showEndpointNameField() {
@@ -142,6 +171,27 @@ async function setDestinations() {
   });
   showAddDestinationModal.value = false;
   refreshEndpoint();
+}
+
+async function replayMessage() {
+  if (!activeMessage.value) return;
+  replayLoading.value = true;
+  await $trpc.messages.replayMessage.mutate({
+    id: activeMessage.value.id,
+    endpointId: endpointId,
+  });
+  await getMessageDeliveries();
+  replayLoading.value = false;
+}
+async function getMessageDeliveries() {
+  if (activeMessageId.value) {
+    const { data: messageDeliveries } =
+      await $trpc.messages.getMessagesDeliveries.useLazyQuery(
+        { messageId: activeMessageId.value },
+        { server: false }
+      );
+    activeMessageDeliveries.value = messageDeliveries.value;
+  }
 }
 </script>
 
@@ -198,6 +248,7 @@ async function setDestinations() {
               <UButton
                 class="w-fit"
                 @click="copy(endpointUrl)"
+                size="xs"
                 :label="endpointUrl"
               />
             </UTooltip>
@@ -285,7 +336,13 @@ async function setDestinations() {
                   class="flex flex-row gap-4 items-center cursor-pointer"
                   @click="activeMessageId = message.id"
                 >
-                  <UCard>
+                  <UCard
+                    :class="
+                      activeMessageId === message.id
+                        ? 'ring-slate-500 ring-1 bg-slate-50'
+                        : ''
+                    "
+                  >
                     <div class="flex flex-col gap-2">
                       <span class="text-sm">{{ message.id }}</span>
                       <span class="text-xs text-gray-500">{{
@@ -306,10 +363,9 @@ async function setDestinations() {
             <span class="text-xl">No messages</span>
           </div>
           <div
-            class="flex flex-col gap-8 w-full max-w-full col-span-4 p-4"
+            class="flex flex-col gap-8 w-full max-w-full col-span-4 p-0 pl-8"
             v-if="activeMessage && endpointMessages && endpointMessages.length"
           >
-            {{ activeMessage.id }}
             <div class="gap-8 grid grid-cols-3">
               <div class="flex flex-col gap-4 min-w-96 col-span-1">
                 <span class="text-xl">Headers</span>
@@ -337,7 +393,15 @@ async function setDestinations() {
                 </div>
               </div>
               <div class="w-full col-span-2 flex flex-col gap-4">
-                <span class="text-xl">Payload</span>
+                <div class="flex flex-row justify-between">
+                  <span class="text-xl">Payload</span>
+                  <UButton
+                    label="Resend to destinations"
+                    @click="replayMessage()"
+                    :loading="replayLoading"
+                    icon="i-ph-arrow-clockwise"
+                  />
+                </div>
                 <div class="relative w-full">
                   <UTooltip
                     text="Copy JSON message"
@@ -347,13 +411,13 @@ async function setDestinations() {
                       square
                       icon="i-ph-clipboard"
                       variant="soft"
-                      @click="copy(JSON.stringify(activeMessage.body))"
+                      @click="copy(activeMessage.body)"
                       class="active:ring-green-500 active:ring-2"
                     />
                   </UTooltip>
                   <Shiki
-                    :code="JSON.stringify(activeMessage.body, null, 2)"
-                    lang="json"
+                    :code="activeMessageBody"
+                    :lang="activeMessageContentType"
                     :options="{
                       transformers: [
                         {
@@ -366,6 +430,44 @@ async function setDestinations() {
                     class="break-words whitespace-normal *:p-8 *:rounded-lg cursor-pointer"
                   />
                 </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-4">
+              <span class="text-xl">Message Deliveries</span>
+              <div
+                class="flex flex-row flex-wrap w-full gap-4"
+                v-if="activeMessageDeliveries && activeMessageDeliveries.length"
+              >
+                <template
+                  v-for="delivery in activeMessageDeliveries"
+                  :key="delivery.id"
+                >
+                  <UCard>
+                    <div class="flex flex-col gap-2">
+                      <div class="flex flex-row gap-8">
+                        <span class="text-sm">
+                          <UTooltip :text="delivery.destination.url">
+                            {{ delivery.destination.name }}
+                          </UTooltip>
+                        </span>
+                        <UBadge
+                          :color="delivery.success ? 'green' : 'red'"
+                          :label="delivery.success ? 'Success' : 'Failed'"
+                        />
+                      </div>
+
+                      <span class="text-sm">
+                        <span class="text-xs text-gray-500">
+                          {{ delivery.createdAt?.toLocaleDateString() }} -
+                          {{ delivery.createdAt?.toLocaleTimeString() }}
+                        </span>
+                      </span>
+                    </div>
+                  </UCard>
+                </template>
+              </div>
+              <div class="flex flex-row flex-wrap w-full" v-else>
+                <span>no deliveries</span>
               </div>
             </div>
           </div>

@@ -1,12 +1,14 @@
 <script setup lang="ts">
-await useFetch("/api/auth/user", {
-  onResponse({ response }) {
-    if (response._data.username) {
-      navigateTo(`/o/${response._data.username.toLowerCase()}`);
-    }
-    navigateTo("/");
-  },
-});
+if (!import.meta.server) {
+  const user = await $fetch("/api/auth/user");
+  if (user?.username) {
+    console.log("user redirect");
+    //@ts-expect-error - posgres typings are not working
+    await navigateTo(`/o/${user.username.toLowerCase()}`);
+  }
+  useUser().value = null;
+  await navigateTo("/");
+}
 </script>
 
 <template>
