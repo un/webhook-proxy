@@ -1,12 +1,15 @@
 <script setup lang="ts">
 if (!import.meta.server) {
   const user = await $fetch("/api/auth/user");
+  if (!user) {
+    useUser().value = null;
+    await navigateTo("/");
+  }
   if (user?.username) {
     //@ts-expect-error - posgres typings are not working
-    await navigateTo(`/o/${user.username.toLowerCase()}`);
+    const newPath = `/o/${user.username.toLowerCase()}`;
+    await navigateTo(newPath);
   }
-  useUser().value = null;
-  await navigateTo("/");
 }
 </script>
 
