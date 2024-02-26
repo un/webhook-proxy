@@ -3,6 +3,9 @@ import { verifyRequestOrigin } from "lucia";
 import type { User, Session } from "lucia";
 
 export default defineEventHandler(async (event) => {
+  if (event.path.startsWith("/api/auth/github")) {
+    return;
+  }
   if (event.node.req.method !== "GET") {
     if (
       event.path.startsWith("/api/endpoint") ||

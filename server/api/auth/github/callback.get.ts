@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { github, lucia } from "~/server/utils/auth";
 
 export default eventHandler(async (event) => {
+  console.log("🔥 callback");
   const query = getQuery(event);
   const code = query.code?.toString() ?? null;
   const state = query.state?.toString() ?? null;
