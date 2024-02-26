@@ -1,3 +1,4 @@
+import type { FetchError } from "ofetch";
 import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { endpoints, messageDeliveries, messages } from "~/server/db/schema";
@@ -74,25 +75,34 @@ export async function sendMessageToDestinations(
     );
     if (!destination) return { success: false, response: null };
     // attempt to send to destination
-    const destinationResponse = await $fetch.raw(destination.destination.url, {
-      method:
-        (message.method as
-          | "GET"
-          | "HEAD"
-          | "PATCH"
-          | "POST"
-          | "PUT"
-          | "DELETE"
-          | "CONNECT"
-          | "OPTIONS"
-          | "TRACE"
-          | undefined) || "POST",
-      // @ts-ignore - header formating
-      headers: cleanHeaders,
-      body: body,
-    });
-
-    const responseCode = destinationResponse.status;
+    let responseCode;
+    let response;
+    try {
+      const destinationResponse = await $fetch.raw(
+        destination.destination.url,
+        {
+          method:
+            (message.method as
+              | "GET"
+              | "HEAD"
+              | "PATCH"
+              | "POST"
+              | "PUT"
+              | "DELETE"
+              | "CONNECT"
+              | "OPTIONS"
+              | "TRACE"
+              | undefined) || "POST",
+          // @ts-ignore - header formating
+          headers: cleanHeaders,
+          body: body,
+        }
+      );
+      responseCode = destinationResponse.status;
+    } catch (error: any) {
+      const errorResponse = error as FetchError;
+      responseCode = errorResponse.status;
+    }
     const successfulDelivery =
       responseCode === destination.destination.responseCode;
 
@@ -102,14 +112,14 @@ export async function sendMessageToDestinations(
       messageId: message.id,
       success: successfulDelivery,
       response: {
-        code: responseCode,
+        code: responseCode || 200,
         content: "",
       },
     });
     if (successfulDelivery) {
-      return { success: true, response: destinationResponse };
+      return { success: true };
     }
-    return { success: false, response: destinationResponse };
+    return { success: false };
   }
   const routingStrategy = endpoint.routingStrategy;
   if (!endpoint.destinations) return;

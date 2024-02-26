@@ -474,7 +474,7 @@ async function getMessageDeliveries() {
       </div>
     </UCard>
     <UModal v-model="showAddDestinationModal">
-      <div class="p-4 flex flex-col gap-4">
+      <div class="p-4 flex flex-col gap-4 h-fit overflow-scroll">
         <span class="font-display text-3xl">Set Destinations</span>
         <span>
           Set the destinations for this endpoint. Messages will be sent to all
