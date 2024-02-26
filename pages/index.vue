@@ -9,10 +9,13 @@ async function doGithubLogin() {
 </script>
 <template>
   <div class="w-full h-full flex flex-col items-center justify-center gap-4">
-    <span class="font-display text-5xl">Webhook Proxy</span>
+    <span class="font-display text-5xl">UnWebhook</span>
     <span class="text-xl">
-      A project by <span class="font-display">UnInbox</span> and
-      <span class="font-display">u22n</span></span
+      A project by
+      <span class="font-display"
+        ><a href="https://UnInbox.com">UnInbox</a></span
+      >
+      and <span class="font-display">u22n</span></span
     >
     <UCard
       class="bg-white/75 dark:bg-white/5 backdrop-blur p-4 rounded-xl shadow-lg dark:shadow-none"
