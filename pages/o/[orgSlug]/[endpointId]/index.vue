@@ -449,10 +449,14 @@ async function getMessageDeliveries() {
                             {{ delivery.destination.name }}
                           </UTooltip>
                         </span>
-                        <UBadge
-                          :color="delivery.success ? 'green' : 'red'"
-                          :label="delivery.success ? 'Success' : 'Failed'"
-                        />
+                        <UTooltip
+                          :text="`Response Code: ${delivery.response.code}`"
+                        >
+                          <UBadge
+                            :color="delivery.success ? 'green' : 'red'"
+                            :label="delivery.success ? 'Success' : 'Failed'"
+                          />
+                        </UTooltip>
                       </div>
 
                       <span class="text-sm">
