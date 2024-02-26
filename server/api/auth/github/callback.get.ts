@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { github, lucia } from "~/server/utils/auth";
 
 export default eventHandler(async (event) => {
-  console.log("🔥 callback");
   const query = getQuery(event);
   const code = query.code?.toString() ?? null;
   const state = query.state?.toString() ?? null;
@@ -15,7 +14,6 @@ export default eventHandler(async (event) => {
       status: 400,
     });
   }
-  console.log({ query, code, state, storedState });
   try {
     const tokens = await github.validateAuthorizationCode(code);
     const githubUserResponse = await fetch("https://api.github.com/user", {
@@ -24,7 +22,6 @@ export default eventHandler(async (event) => {
       },
     });
 
-    console.log({ tokens, githubUserResponse });
     const githubUser: GitHubUser = await githubUserResponse.json();
     const existingUser = await db.query.users.findFirst({
       where: eq(users.githubId, githubUser.id),
@@ -35,7 +32,6 @@ export default eventHandler(async (event) => {
       },
     });
 
-    console.log({ githubUser, existingUser });
     if (existingUser) {
       const session = await lucia.createSession(existingUser.id, {});
       const cookie = lucia.createSessionCookie(session.id);
@@ -66,7 +62,7 @@ export default eventHandler(async (event) => {
 
     const session = await lucia.createSession(newUser[0].id, {});
     const cookie = lucia.createSessionCookie(session.id);
-    console.log({ session, cookie });
+
     setCookie(event, cookie.name, cookie.value, cookie.attributes);
     return await sendRedirect(event, `/o/${githubUser.login.toLowerCase()}`);
   } catch (e) {
