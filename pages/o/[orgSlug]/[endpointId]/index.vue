@@ -268,7 +268,7 @@ async function getMessageDeliveries() {
                   </UTooltip>
                 </div>
                 <div class="flex flex-row gap-2 items-center">
-                  <span class="text-sm text-gray-500">Rounting: </span>
+                  <span class="text-sm text-gray-500">Routing: </span>
                   <UTooltip
                     text="Click to edit"
                     class="w-fit flex flex-row gap-2 items-center"
