@@ -2,6 +2,7 @@ import type { FetchError } from "ofetch";
 import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { endpoints, messageDeliveries, messages } from "~/server/db/schema";
+import { isBodyJson } from "./contentType";
 
 export async function sendMessageToDestinations(
   endpointId: string,
@@ -43,6 +44,7 @@ export async function sendMessageToDestinations(
       id: true,
       headers: true,
       body: true,
+      bodyJson: true,
       contentType: true,
       endpointId: true,
       method: true,
@@ -54,10 +56,9 @@ export async function sendMessageToDestinations(
 
   if (!message || message.orgId !== orgId) return;
   const payloadHeaders = message.headers;
-  const body =
-    message.contentType === "application/json"
-      ? JSON.parse(message.body)
-      : message.body;
+  const body = isBodyJson(message.contentType)
+    ? (message.bodyJson as JSON)
+    : (message.body as string);
   if (!body || !payloadHeaders) return;
 
   // Handle Forwarding to the destinations

@@ -28,6 +28,7 @@ export const messageRouter = router({
           headers: true,
           origin: true,
           body: true,
+          bodyJson: true,
           response: true,
           createdAt: true,
           contentType: true,

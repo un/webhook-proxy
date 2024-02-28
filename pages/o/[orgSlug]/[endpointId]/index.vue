@@ -105,17 +105,17 @@ const activeMessageHeaders = computed(() => {
 
 const activeMessageBody = computed(() => {
   if (!activeMessage.value) return "";
-  if (activeMessage.value.contentType === "application/json") {
-    return JSON.stringify(JSON.parse(activeMessage.value.body), null, 2);
+  const split = activeMessage.value.contentType.split(";")[0];
+  if (split === "application/json") {
+    return JSON.stringify(activeMessage.value.bodyJson, null, 2);
   }
-  return activeMessage.value.body;
+  return activeMessage.value.body as string;
 });
 
 const activeMessageContentType = computed(() => {
   if (!activeMessage.value) return "";
-  const type = activeMessage.value.contentType.startsWith("application/")
-    ? activeMessage.value.contentType.split("/")[1]
-    : activeMessage.value.contentType;
+  const split = activeMessage.value.contentType.split(";")[0];
+  const type = split.startsWith("application/") ? split.split("/")[1] : split;
   return type;
 });
 
@@ -410,7 +410,7 @@ async function getMessageDeliveries() {
                       square
                       icon="i-ph-clipboard"
                       variant="soft"
-                      @click="copy(activeMessage.body)"
+                      @click="copy(activeMessageBody)"
                       class="active:ring-green-500 active:ring-2"
                     />
                   </UTooltip>

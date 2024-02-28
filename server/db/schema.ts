@@ -203,7 +203,8 @@ export const messages = pgTable("messages", {
   endpointId: uuid("endpoint_id").notNull(),
   headers: json("headers").notNull(),
   method: varchar("method").notNull(),
-  body: varchar("body").notNull(),
+  body: varchar("body"),
+  bodyJson: json("body_json"),
   contentType: varchar("content_type").notNull(),
   response: json("response")
     .notNull()
