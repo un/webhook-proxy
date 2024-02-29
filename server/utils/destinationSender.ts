@@ -55,6 +55,7 @@ export async function sendMessageToDestinations(
 
   if (!message || message.orgId !== orgId) return;
   const payloadHeaders = message.headers;
+  // const body = message.body;
   const body = message.body;
   if (!body || !payloadHeaders) return;
 
@@ -65,6 +66,7 @@ export async function sendMessageToDestinations(
       .filter(([k]) => !headersToRemove.includes(k.toLowerCase()))
       .map(([k, v]) => [k.toLowerCase(), v])
   );
+
   async function sendToDestination(index: number) {
     if (!message) return { success: false, response: null };
     if (!endpoint) return { success: false, response: null };
@@ -75,6 +77,7 @@ export async function sendMessageToDestinations(
     // attempt to send to destination
     let responseCode;
     try {
+      console.log("🔥 sending to destination the following body", body);
       const destinationResponse = await $fetch.raw(
         destination.destination.url,
         {
