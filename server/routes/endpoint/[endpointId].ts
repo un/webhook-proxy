@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
       endpointId: endpointId,
       origin: requestHost,
       method: requestMethod,
-      contentType: contentType || "application/json",
+      contentType: contentTypeUnparsed || "application/json",
       response: {
         code: endpointResponse.response.code,
         content: endpointResponse.response.content,

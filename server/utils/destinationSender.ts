@@ -56,9 +56,11 @@ export async function sendMessageToDestinations(
 
   if (!message || message.orgId !== orgId) return;
   const payloadHeaders = message.headers;
-  const body = isBodyJson(message.contentType)
-    ? (message.bodyJson as JSON)
-    : (message.body as string);
+  const body: BodyInit | Record<string, any> | null | undefined = isBodyJson(
+    message.contentType
+  )
+    ? message.bodyJson
+    : message.body;
   if (!body || !payloadHeaders) return;
 
   // Handle Forwarding to the destinations
@@ -95,6 +97,7 @@ export async function sendMessageToDestinations(
               | "TRACE"
               | undefined) || "POST",
           // @ts-ignore - header formating
+          contentType: message.contentType,
           headers: cleanHeaders,
           body: body,
         }
