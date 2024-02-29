@@ -2,7 +2,6 @@ import type { FetchError } from "ofetch";
 import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { endpoints, messageDeliveries, messages } from "~/server/db/schema";
-import { isBodyJson } from "./contentType";
 
 export async function sendMessageToDestinations(
   endpointId: string,
@@ -56,15 +55,11 @@ export async function sendMessageToDestinations(
 
   if (!message || message.orgId !== orgId) return;
   const payloadHeaders = message.headers;
-  const body: BodyInit | Record<string, any> | null | undefined = isBodyJson(
-    message.contentType
-  )
-    ? message.bodyJson
-    : message.body;
+  const body = message.body;
   if (!body || !payloadHeaders) return;
 
   // Handle Forwarding to the destinations
-  const headersToRemove = ["content-type", "content-length", "connection"];
+  const headersToRemove = ["content-length", "connection"];
   const cleanHeaders = Object.fromEntries(
     Object.entries(payloadHeaders)
       .filter(([k]) => !headersToRemove.includes(k.toLowerCase()))
@@ -79,7 +74,6 @@ export async function sendMessageToDestinations(
     if (!destination) return { success: false, response: null };
     // attempt to send to destination
     let responseCode;
-    let response;
     try {
       const destinationResponse = await $fetch.raw(
         destination.destination.url,
@@ -97,7 +91,6 @@ export async function sendMessageToDestinations(
               | "TRACE"
               | undefined) || "POST",
           // @ts-ignore - header formating
-          contentType: message.contentType,
           headers: cleanHeaders,
           body: body,
         }

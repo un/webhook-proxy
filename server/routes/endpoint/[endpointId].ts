@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
   // send the responses to the client
   const payloadHeaders = getHeaders(event);
-  const payloadBody = await readBody(event);
+  const payloadBody = await readRawBody(event);
   const requestHost = getRequestHost(event);
   const requestMethod = event.node.req.method as string;
   const contentTypeUnparsed = getHeader(event, "content-type");
@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
   // parse the content type
   const contentType = contentTypeUnparsed?.split(";")[0] || "application/json";
   const isJson = isBodyJson(contentType);
+  const bodyJson = isJson ? JSON.parse(payloadBody) : null;
 
   // save the message to the database
   const messageInsert = await db
@@ -55,7 +56,8 @@ export default defineEventHandler(async (event) => {
     .values({
       orgId: endpointResponse.orgId,
       headers: payloadHeaders,
-      ...(isJson ? { bodyJson: payloadBody } : { body: payloadBody }),
+      bodyJson: bodyJson,
+      body: payloadBody,
       endpointId: endpointId,
       origin: requestHost,
       method: requestMethod,
