@@ -4,7 +4,7 @@ import { endpoints, messageDeliveries, messages } from "~/server/db/schema";
 import { sendMessageToDestinations } from "~/server/utils/destinationSender";
 export default defineEventHandler(async (event) => {
   // get endpoint data
-  const endpointId = getRouterParam(event, "endpointId");
+  const endpointId = getRouterParam(event, "endpointId")?.split("/")?.[0];
   if (!endpointId) return sendNoContent(event, 404);
   const endpointResponse = await db.query.endpoints.findFirst({
     where: eq(endpoints.id, endpointId),
