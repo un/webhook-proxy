@@ -21,10 +21,9 @@ export default defineNuxtConfig({
   },
 
   shiki: {
-    theme: "tokyo-night",
-    lang: "json",
-    themes: ["tokyo-night"],
-    langs: [],
+    bundledThemes: ["tokyo-night"],
+    defaultLang: "json",
+    defaultTheme: "tokyo-night",
   },
 
   css: ["@/assets/css/main.css"],

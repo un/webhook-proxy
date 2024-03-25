@@ -3,8 +3,15 @@ import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { endpoints, messageDeliveries, messages } from "~/server/db/schema";
 
+export const createUrl = (url: string, path: string[]) => {
+  if (!path.length) return url;
+  url = url.replace(/\/+$/, "");
+  return `${url}/${path.join("/")}`;
+};
+
 export async function sendMessageToDestinations(
   endpointId: string,
+  path: string[],
   messageId: string,
   orgId: string
 ) {
@@ -79,7 +86,7 @@ export async function sendMessageToDestinations(
     try {
       console.log("🔥 sending to destination the following body", body);
       const destinationResponse = await $fetch.raw(
-        destination.destination.url,
+        createUrl(destination.destination.url, path),
         {
           method:
             (message.method as

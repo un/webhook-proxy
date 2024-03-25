@@ -33,6 +33,7 @@ export const messageRouter = router({
           createdAt: true,
           contentType: true,
           method: true,
+          path: true,
         },
         orderBy: [desc(messages.createdAt)],
       });
@@ -84,13 +85,19 @@ export const messageRouter = router({
         .object({
           id: z.string(),
           endpointId: z.string(),
+          path: z.array(z.string()),
         })
         .strict()
     )
     .mutation(async ({ ctx, input }) => {
       const { db, user, org } = ctx;
 
-      await sendMessageToDestinations(input.endpointId, input.id, org.id);
+      await sendMessageToDestinations(
+        input.endpointId,
+        input.path,
+        input.id,
+        org.id
+      );
 
       return;
     }),

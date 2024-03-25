@@ -1,12 +1,7 @@
-import {
-  TRPCError,
-  initTRPC,
-  experimental_standaloneMiddleware,
-} from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import type { Context } from "./createContext";
-import * as z from "zod";
-import { OrgContext } from "../utils/orgSlug";
+import type { OrgContext } from "../utils/orgSlug";
 
 export const trpcContext = initTRPC
   .context<Context>()

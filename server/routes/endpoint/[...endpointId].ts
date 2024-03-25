@@ -2,9 +2,12 @@ import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { endpoints, messageDeliveries, messages } from "~/server/db/schema";
 import { sendMessageToDestinations } from "~/server/utils/destinationSender";
+
 export default defineEventHandler(async (event) => {
   // get endpoint data
-  const endpointId = getRouterParam(event, "endpointId")?.split("/")?.[0];
+  const params = getRouterParam(event, "endpointId")?.split("/") || [];
+  const [endpointId = null, ...path] = params;
+
   if (!endpointId) return sendNoContent(event, 404);
   const endpointResponse = await db.query.endpoints.findFirst({
     where: eq(endpoints.id, endpointId),
@@ -43,7 +46,7 @@ export default defineEventHandler(async (event) => {
   if (!endpointResponse) return sendNoContent(event, 404);
   if (!payloadBody || !payloadHeaders) return sendNoContent(event, 400);
   setResponseStatus(event, endpointResponse.response.code);
-  await send(event, endpointResponse.response.content, "application/text");
+  await send(event, endpointResponse.response.content);
 
   // parse the content type
   const contentType = contentTypeUnparsed?.split(";")[0] || "application/json";
@@ -59,6 +62,7 @@ export default defineEventHandler(async (event) => {
       bodyJson: bodyJson,
       body: payloadBody,
       endpointId: endpointId,
+      path: path,
       origin: requestHost,
       method: requestMethod,
       contentType: contentTypeUnparsed || "application/json",
@@ -71,6 +75,7 @@ export default defineEventHandler(async (event) => {
 
   sendMessageToDestinations(
     endpointId,
+    path,
     messageInsert[0].id,
     endpointResponse.orgId
   );
