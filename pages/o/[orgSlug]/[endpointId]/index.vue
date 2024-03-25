@@ -177,6 +177,7 @@ async function replayMessage() {
   replayLoading.value = true;
   await $trpc.messages.replayMessage.mutate({
     id: activeMessage.value.id,
+    path: activeMessage.value.path,
     endpointId: endpointId,
   });
   await getMessageDeliveries();
@@ -416,11 +417,12 @@ async function getMessageDeliveries() {
                   </UTooltip>
                   <Shiki
                     :code="activeMessageBody"
-                    :lang="activeMessageContentType"
+                    :lang="activeMessageContentType as any"
                     :options="{
                       transformers: [
                         {
                           line(node: any) {
+                            // @ts-expect-error, 
                             this.addClassToHast(node, 'whitespace-normal mb-2');
                           },
                         },
