@@ -417,12 +417,11 @@ async function getMessageDeliveries() {
                   </UTooltip>
                   <Shiki
                     :code="activeMessageBody"
-                    :lang="activeMessageContentType as any"
+                    :lang="activeMessageContentType"
                     :options="{
                       transformers: [
                         {
                           line(node: any) {
-                            // @ts-expect-error, 
                             this.addClassToHast(node, 'whitespace-normal mb-2');
                           },
                         },
