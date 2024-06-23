@@ -4,15 +4,99 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
+
+![Screenshot of UnWebhook](screenshot.png)
+
+## About
+
+A simple tool for working with webhooks.
+Great for teams and staging environments.
+
+Watch the introduction video [on youtube](https://youtu.be/q3dS1leG1wQ)
+
+Capabilities
+
+- add multiple endpoints
+- save received messages (for 7 days)
+- automatically forward incoming messages to one or more destinations
+- choose forwarding strategy (send to: first in list, all in list)
+- support fallback forwarding (if first is down, forward to next)
+- replay webhook delivery (resend the data to destinations)
+
+_Want to send messages to your local machine and need a tunnel?
+Check out [untun](https://github.com/unjs/untun) by the UnJs team_
+
+---
+
+## Tech Stack
+
+`UnWebhook` is built with the following epic technologies & tools:
+
+- [Nuxt JS](https://nuxt.com) Vue based FrontEnd & Backend + modules
+- [Tailwind](https://tailwindcss.com/) CSS Engine
+- [tRPC](https://trpc.io/) Typesafe APIs
+- [DrizzleORM](https://orm.drizzle.team/) ORM + MySQL
+
+## Running Locally
+
+To get a local copy up and running, follow these simple steps.
+
+### Prerequisites
+
+Here is what you need to be able to run UnInbox locally.
+
+- A Supabase database
+- Node.js (Version: >=20.x)
+- NVM (Node Version Manager) (see https://github.com/nvm-sh/nvm)
+- pnpm (see https://pnpm.io/installation)
+
+### Setup
+
+1. Clone the repo into a public GitHub repository (or fork https://github.com/un/webhook-proxy/fork).
+
+   ```sh
+   git clone https://github.com/un/webhook-proxy.git UnWebhook
+   ```
+
+   > If you are on Windows, run the following command on `gitbash` with admin privileges: <br> > `git clone -c core.symlinks=true https://github.com/un/webhook-proxy.git` <br>
+   > See [docs](https://cal.com/docs/how-to-guides/how-to-troubleshoot-symbolic-link-issues-on-windows#enable-symbolic-links) for more details.
+
+2. Go to the project folder
+
+   ```sh
+   cd UnWebhook
+   ```
+
+3. Check and install the correct node/pnpm versions
+
+   ```sh
+   nvm install
+   ```
+
+4. Install packages with pnpm
+
+   ```sh
+   pnpm i
+   ```
+
+5. Set up your `.env` file
+
+   - Duplicate `.env.example` to `.env`. This file is already pre-configured for use with the local docker containers
+
+     mac
+
+     ```sh
+      cp .env.example .env
+     ```
+
+     windows
+
+     ```sh
+      copy .env.example .env
+     ```
+
+6. Set your env variables
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
