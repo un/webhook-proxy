@@ -1,26 +1,8 @@
-<p align="center">
-   <a href="https://github.com/un/webhook-proxy/stargazers"><img src="https://img.shields.io/github/stars/un/webhook-proxy?logo=github&style=for-the-badge&color=yellow" alt="Github Stars"></a>
-</p>
-<p align="center">
-   <a href="https://github.com/un/webhook-proxy/pulse"><img src="https://img.shields.io/github/commit-activity/m/un/webhook-proxy?style=for-the-badge&color=green" alt="Commits-per-month"></a>
-</p>
-<p align="center" style="margin-top: 12px">
-  <a href="https://unwebhook.com">
-   <img width="250px" src="https://avatars.githubusercontent.com/u/135225712?s=400&u=72ad315d63b0326e5bb34377c3f59389373edc9a&v=4" alt="UnWebhook Logo">
-  </a>
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-  <h1 align="center"><tt>UnWebhook</tt></h1>
-  <h2 align="center">A simple tool for working with webhooks</h2>
+## Getting Started
 
-<p align="center">
-    <a href="https://UnWebhook.com"><strong>To our Website & App »</strong></a>
-    <br />
-    <br />
-    <h3>By the <strong>Un</strong> team, building <a href="https://github.com/un/inbox"><strong>UnInbox</strong></a></h3>
-    <a href="https://twitter.com/UnInbox">UnInbox Twitter</a> - 
-    <a href="https://discord.gg/QMV9p9sgza">UnInbox Discord Server</a>
-  </p>
-</p>
+First, run the development server:
 
 ---
 
@@ -116,39 +98,23 @@ Here is what you need to be able to run UnInbox locally.
 
 6. Set your env variables
 
-7. Sync the schema with the database:
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-   ```sh
-   pnpm run db:push
-   ```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-8. Start the app and all services
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-   ```sh
-   pnpm run dev
-   ```
+## Learn More
 
-## Self Hosting
+To learn more about Next.js, take a look at the following resources:
 
-Self hosting is encouraged, deploy to Vercel with Supabase as the DB
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-If you deploy to Supabase, enable the pg_cron extension to automatically delete messages after 7 days:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-1. Click `Database` in the sidebar > `Extensions` > search for and enable `pg_cron`
-2. Go to SQL editor, paste and run the following sql statements
+## Deploy on Vercel
 
-```sql
-select cron.schedule (
-    'cleanup-messages',
-    '30 3 * * 6',
-    $$ delete from messages where created_at < now() - interval '1 week' $$
-);
-```
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-```sql
-select cron.schedule (
-    'cleanup-deliveries',
-    '30 3 * * 6',
-    $$ delete from message_deliveries where created_at < now() - interval '1 week' $$
-);
-```
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
