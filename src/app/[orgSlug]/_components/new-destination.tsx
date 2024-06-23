@@ -80,15 +80,15 @@ export function NewDestinationDialog({ orgSlug }: { orgSlug: string }) {
       <DialogTrigger asChild>
         <Button className="gap-1">
           <Plus size={16} />
-          Create New Endpoint
+          Create New Destination
         </Button>
       </DialogTrigger>
       <DialogPortal>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Endpoint</DialogTitle>
+            <DialogTitle>Create New Destination</DialogTitle>
             <DialogDescription>
-              A endpoint is a URL which will be used with the Webhooks you want to catch.
+              A destination is a URL where the events would be forwarded to.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -108,7 +108,7 @@ export function NewDestinationDialog({ orgSlug }: { orgSlug: string }) {
                       <Input placeholder="Destination Name" {...field} />
                     </FormControl>
                     <FormDescription>
-                      The name of the endpoint, this will be displayed in the table.
+                      The name of the destination, this will be displayed in the table.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -129,7 +129,7 @@ export function NewDestinationDialog({ orgSlug }: { orgSlug: string }) {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "Creating Endpoint..." : "Create Endpoint"}
+                {isPending ? "Creating Destination..." : "Create Destination"}
               </Button>
             </form>
           </Form>

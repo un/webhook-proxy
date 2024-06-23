@@ -33,7 +33,7 @@ Check out [untun](https://github.com/unjs/untun) by the UnJs team_
 
 `UnWebhook` is built with the following epic technologies & tools:
 
-- [Nuxt JS](https://nuxt.com) Vue based FrontEnd & Backend + modules
+- [Next JS](https://nextjs.com) React based FrontEnd & Backend
 - [Tailwind](https://tailwindcss.com/) CSS Engine
 - [tRPC](https://trpc.io/) Typesafe APIs
 - [DrizzleORM](https://orm.drizzle.team/) ORM + MySQL

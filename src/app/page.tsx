@@ -8,7 +8,7 @@ export default async function Home() {
   if (user) redirect("/dashboard");
 
   return (
-    <div className="mx-auto flex w-fit flex-col items-center justify-center gap-4">
+    <div className="mx-auto flex h-full w-fit flex-col items-center justify-center gap-4">
       <h1 className="text-5xl font-bold">UnWebhook</h1>
       <p className="text-lg font-semibold">
         A Webhook Request Catcher/Relayer/Replayer by{" "}
