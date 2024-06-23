@@ -71,7 +71,7 @@ Here is what you need to be able to run UnInbox locally.
 
 ### Setup
 
-1. Clone the repo into a public GitHub repository (or fork https://github.com/un/webhook-proxy/fork). If you plan to distribute the code, keep the source code public to comply with [AGPLv3](https://github.com/un/webhook-proxy/blob/main/LICENSE). To clone in a private repository, contact us to acquire a commercial license
+1. Clone the repo into a public GitHub repository (or fork https://github.com/un/webhook-proxy/fork).
 
    ```sh
    git clone https://github.com/un/webhook-proxy.git UnWebhook
